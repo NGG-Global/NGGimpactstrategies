@@ -16,7 +16,7 @@ Deputy regional managers ("סגני מנהלי מרחבים") in an NGG manageme
 Digital version of the POIS (Profile of Organizational Influence Strategies, Kipnis & Schmidt) paper questionnaire: 26 behaviour statements rated 1 (never) to 5 (almost always); sums per six influence tactics (upward appeal, coalitions, assertiveness, bargaining, appeal to emotion, appeal to reason), mapped to percentile norms (low / mid / high), shown as a profile with style descriptions. Success: every participant finishes in the session time and leaves understanding their own influence profile.
 
 ## Operating Context
-Live workshop. Facilitator gives a time slot; participants answer on phones at once, then discuss. Results are seen by the participant only — no facilitator view, no stored personal results.
+Live workshop. Facilitator gives a time slot; participants answer on phones at once, then discuss. Results are seen by the participant only — no facilitator view, no stored personal results. The participant can save their own copy (PNG profile card or A4 PDF), generated on the device and never uploaded.
 
 ## Capabilities and Constraints
 - 26 items, fixed original order (norms established on it); 5-point frequency scale.

@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Scoring tests
-        run: node tests/scoring.test.js
+      - name: Scoring and export tests
+        run: for t in tests/*.test.js; do node "$t"; done
 
   deploy:
     needs: test

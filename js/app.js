@@ -133,14 +133,22 @@ function back(){
   animate('back',function(){idx--;save();fillCard(idx)});
 }
 
+/* One profile, used by the results screen and by the PNG / PDF export. */
+function profile(){
+  var res=TACTICS.map(function(t){var sc=score(t.id),p=pct(t.id,sc);return {t:t,sc:sc,p:p,max:SCORING_KEY[t.id].length*5}});
+  var max=Math.max.apply(null,res.map(function(x){return x.p}));
+  res.forEach(function(x){x.top=x.p===max});
+  return res;
+}
+
 function results(){
   show('s-results');
   var box=$('profile');box.innerHTML='';
-  var res=TACTICS.map(function(t){var sc=score(t.id),p=pct(t.id,sc);return {t:t,sc:sc,p:p,max:SCORING_KEY[t.id].length*5}});
-  var max=Math.max.apply(null,res.map(function(x){return x.p}));
-  res.forEach(function(x){
+  /* the export draws with the page font: make sure every weight is loaded before a tap */
+  if(document.fonts&&document.fonts.load)['400','700','800'].forEach(function(w){document.fonts.load(w+' 16px Assistant').catch(function(){})});
+  profile().forEach(function(x){
     var t=x.t,p=x.p,lvl=level(p);
-    var d=document.createElement('details');d.className='tac'+(p===max?' top':'');
+    var d=document.createElement('details');d.className='tac'+(x.top?' top':'');
     d.innerHTML='<summary><div class="tac-head"><span class="tac-name">'+t.name+'</span><span class="tac-level">'+lvl+'<span class="raw"> · '+x.sc+' מתוך '+x.max+'</span></span></div>'+
       '<div class="track" role="img" aria-label="'+t.name+': '+lvl+'"><i></i><i></i><i></i><span class="marker"></span></div>'+
       '<span class="more">מה זה אומר<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></summary>'+
@@ -156,6 +164,25 @@ function results(){
 $('start').addEventListener('click',function(){answers=new Array(N).fill(null);idx=0;save();show('s-deck');fillCard(0)});
 $('resume').addEventListener('click',function(){show('s-deck');fillCard(idx)});
 $('back').addEventListener('click',back);
+/* Export: PNG = phone-sized profile card; PDF = A4 page with descriptions. Runs synchronously in the tap
+   so phones accept the share sheet. */
+function exportProfile(kind){
+  var d=new Date(), ymd=d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate());
+  var data={
+    date:d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(),
+    logo:document.querySelector('.bar img'),
+    rows:profile().map(function(x){return {name:x.t.name,desc:x.t.desc,level:level(x.p),score:x.sc,max:x.max,pct:x.p,top:x.top}})
+  };
+  try{
+    if(kind==='png')POISExport.save(POISExport.png(POISExport.render(data,'card')),'NGG-influence-profile-'+ymd+'.png');
+    else POISExport.save(POISExport.pdf(POISExport.render(data,'a4')),'NGG-influence-profile-'+ymd+'.pdf');
+    $('exp-msg').textContent='';
+  }catch(e){
+    $('exp-msg').textContent='לא הצלחנו ליצור את הקובץ במכשיר הזה. אפשר לצלם את המסך במקום.';
+  }
+}
+$('exp-png').addEventListener('click',function(){exportProfile('png')});
+$('exp-pdf').addEventListener('click',function(){exportProfile('pdf')});
 $('restart').addEventListener('click',function(){clear();answers=new Array(N).fill(null);idx=0;$('resume').hidden=true;show('s-intro')});
 document.addEventListener('keydown',function(e){
   if(!$('s-deck').classList.contains('on'))return;
