@@ -1,0 +1,49 @@
+# Tests the scoring key on every push and pull request; publishes to GitHub Pages from main.
+# Only the participant-facing files are published (index.html, css, js, assets):
+# tests, docs and project notes stay out of the site.
+name: Test and deploy to GitHub Pages
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Scoring tests
+        run: node tests/scoring.test.js
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -r index.html css js assets _site/
+          find _site -type f | sort
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5
