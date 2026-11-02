@@ -52,6 +52,7 @@ PRODUCT.md            product context
   (`ngg-pois-v1`) so a locked phone can resume; nothing is sent anywhere. No backend, no analytics,
   no external requests. The participant may save their own profile (PNG / PDF, below); the file is
   generated on the device and handed to the system share sheet or a download, never uploaded.
+- **Context:** filled on the participant's own phone during the session; one-thumb use, 44px+ targets.
 
 ## Export (results screen → "שמירת הפרופיל")
 - **PNG** = phone-sized profile card (390 pt wide at 3×): header, six tactics with level, score and
@@ -64,7 +65,6 @@ PRODUCT.md            product context
   share sheet; other devices get a download. Export must run synchronously inside the tap, or iOS
   refuses the share request: don't add `await` / `toBlob` before `save()`.
 - Filenames: `NGG-influence-profile-YYYY-MM-DD.png|pdf`.
-- **Context:** filled on the participant's own phone during the session; one-thumb use, 44px+ targets.
 
 ## Scoring (source: docs/reference/scoring-sheet.jpg, norms-sheet.jpg)
 | Tactic | id | Items | Range | Low | Mid | High |
