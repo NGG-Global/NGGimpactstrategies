@@ -13,6 +13,7 @@ No build step, no dependencies.
 ```
 python3 -m http.server 8000      # then open http://localhost:8000
 node tests/scoring.test.js       # scoring tests
+node tests/export.test.js        # PDF file structure
 ```
 Review states for screenshots: `?review=1#deck`, `?review=1#done`, `?review=1#results` (never written to storage).
 
@@ -27,9 +28,11 @@ attributes (set styles via `element.style`), no external URLs, or the page break
 index.html            markup: intro → deck → results (three <section class="screen">)
 css/styles.css        all styling; colour tokens on :root, dark-mode overrides
 js/scoring.js         SCORING_KEY, NORMS, score/pct/level  (window.POIS + module.exports)
-js/app.js             items text, tactic descriptions, deck flow, results rendering
+js/app.js             items text, tactic descriptions, deck flow, results rendering, export buttons
+js/export.js          PNG / PDF export drawn on <canvas>; minimal PDF writer (window.POISExport + module.exports)
 assets/               Assistant font (4 weights, local), NGG compact logo
 tests/scoring.test.js locks key + band cut-offs to the original sheets
+tests/export.test.js  PDF structure: xref offsets, stream lengths, A4 page, Hebrew title
 .github/workflows/    pages.yml: test, then deploy to GitHub Pages from main
 docs/reference/       photos of the original scoring / norms / styles sheets (git-ignored, local only)
 docs/screenshots/     approved look at 390×844 and 375×667, light + dark
@@ -47,8 +50,21 @@ PRODUCT.md            product context
   Masculine phrasing as in the source. Hebrew RTL throughout.
 - **Privacy:** results are seen by the participant only. Answers live in `localStorage`
   (`ngg-pois-v1`) so a locked phone can resume; nothing is sent anywhere. No backend, no analytics,
-  no external requests.
+  no external requests. The participant may save their own profile (PNG / PDF, below); the file is
+  generated on the device and handed to the system share sheet or a download, never uploaded.
 - **Context:** filled on the participant's own phone during the session; one-thumb use, 44px+ targets.
+
+## Export (results screen → "שמירת הפרופיל")
+- **PNG** = phone-sized profile card (390 pt wide at 3×): header, six tactics with level, score and
+  band track, band note. No descriptions, so it stays readable in a photo gallery without zooming.
+- **PDF** = one A4 page (200 dpi image in a hand-written PDF): the same profile plus each tactic's
+  description. Image-based, so text is not selectable; chosen over `window.print()` because phones
+  bury "save as PDF" in the print dialog.
+- Both are drawn on `<canvas>` with the page's Assistant font, always in the light theme; magenta only
+  on the card tick and the top tactic(s). Phones (`pointer: coarse` + `navigator.canShare`) get the
+  share sheet; other devices get a download. Export must run synchronously inside the tap, or iOS
+  refuses the share request: don't add `await` / `toBlob` before `save()`.
+- Filenames: `NGG-influence-profile-YYYY-MM-DD.png|pdf`.
 
 ## Scoring (source: docs/reference/scoring-sheet.jpg, norms-sheet.jpg)
 | Tactic | id | Items | Range | Low | Mid | High |
@@ -76,7 +92,9 @@ PRODUCT.md            product context
 2. ~~Remove the review hooks~~ Done: gated behind `?review=1`; review mode never writes to `localStorage`.
 3. **Real-device QA** (iPhone Safari + Android Chrome): safe areas and notch, one-hand reach of the
    five answer buttons, resume after locking the phone mid-deck, back button on card 1 and on the
-   final card, dark mode, very small screens (375×667), `prefers-reduced-motion`.
+   final card, dark mode, very small screens (375×667), `prefers-reduced-motion`. Export: share sheet
+   opens for PNG and PDF, "Save Image" lands in Photos, PDF opens in Files / Drive, Hebrew renders
+   right-to-left in both files (canvas text direction is only verified in Chromium so far).
 4. **Hand-check one profile** against the paper form (fill both, compare the six sums and bands).
 
 ## Open items (waiting on NGG — don't resolve on your own)
